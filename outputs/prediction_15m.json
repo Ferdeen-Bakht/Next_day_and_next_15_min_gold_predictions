@@ -1,0 +1,176 @@
+{
+  "data_rows": 2970,
+  "last_bar_time": "2026-01-30 23:45:00",
+  "last_close": 4889.48,
+  "ensemble_members": [
+    "TFT",
+    "LSTM-Transformer",
+    "LSTM-Attention-LSTM"
+  ],
+  "test_metrics": {
+    "Naive": {
+      "mae": {
+        "n15_High": 13.676,
+        "n15_Low": 13.831,
+        "nd_Open": 0.125,
+        "nd_High": 208.297,
+        "nd_Low": 281.886,
+        "nd_Close": 289.539,
+        "n15_Close": 14.11
+      },
+      "dir_acc_15m": NaN
+    },
+    "LSTM-Transformer": {
+      "mae": {
+        "n15_High": 9.735,
+        "n15_Low": 10.78,
+        "nd_Open": 0.165,
+        "nd_High": 164.775,
+        "nd_Low": 242.469,
+        "nd_Close": 291.872,
+        "n15_Close": 14.39
+      },
+      "dir_acc_15m": 0.3915343915343915
+    },
+    "LSTM-Attention-LSTM": {
+      "mae": {
+        "n15_High": 9.856,
+        "n15_Low": 10.626,
+        "nd_Open": 0.155,
+        "nd_High": 166.595,
+        "nd_Low": 247.871,
+        "nd_Close": 289.545,
+        "n15_Close": 14.058
+      },
+      "dir_acc_15m": 0.6031746031746031
+    },
+    "CNN-BiLSTM-Attn": {
+      "mae": {
+        "n15_High": 10.292,
+        "n15_Low": 10.743,
+        "nd_Open": 0.161,
+        "nd_High": 166.103,
+        "nd_Low": 250.599,
+        "nd_Close": 289.851,
+        "n15_Close": 14.223
+      },
+      "dir_acc_15m": 0.4497354497354497
+    },
+    "PatchTST": {
+      "mae": {
+        "n15_High": 10.181,
+        "n15_Low": 10.927,
+        "nd_Open": 0.269,
+        "nd_High": 161.845,
+        "nd_Low": 277.588,
+        "nd_Close": 293.197,
+        "n15_Close": 14.655
+      },
+      "dir_acc_15m": 0.4126984126984127
+    },
+    "TFT": {
+      "mae": {
+        "n15_High": 9.583,
+        "n15_Low": 10.747,
+        "nd_Open": 0.162,
+        "nd_High": 166.742,
+        "nd_Low": 248.983,
+        "nd_Close": 291.143,
+        "n15_Close": 14.197
+      },
+      "dir_acc_15m": 0.4603174603174603
+    },
+    "Ensemble": {
+      "mae": {
+        "n15_High": 9.716,
+        "n15_Low": 10.701,
+        "nd_Open": 0.145,
+        "nd_High": 165.732,
+        "nd_Low": 246.431,
+        "nd_Close": 290.698,
+        "n15_Close": 14.202
+      },
+      "dir_acc_15m": 0.48148148148148145
+    }
+  },
+  "ensemble": {
+    "next_15m": {
+      "High": 4896.52,
+      "Low": 4881.66,
+      "Close": 4889.67
+    },
+    "next_day": {
+      "Open": 4889.6,
+      "High": 4957.33,
+      "Low": 4840.31,
+      "Close": 4903.9
+    }
+  },
+  "per_model": {
+    "LSTM-Transformer": {
+      "next_15m": {
+        "High": 4897.12,
+        "Low": 4882.08,
+        "Close": 4889.54
+      },
+      "next_day": {
+        "Open": 4889.69,
+        "High": 4972.93,
+        "Low": 4826.69,
+        "Close": 4905.99
+      }
+    },
+    "LSTM-Attention-LSTM": {
+      "next_15m": {
+        "High": 4895.79,
+        "Low": 4881.51,
+        "Close": 4889.35
+      },
+      "next_day": {
+        "Open": 4889.65,
+        "High": 4947.63,
+        "Low": 4838.48,
+        "Close": 4898.26
+      }
+    },
+    "CNN-BiLSTM-Attn": {
+      "next_15m": {
+        "High": 4893.9,
+        "Low": 4882.4,
+        "Close": 4889.0
+      },
+      "next_day": {
+        "Open": 4889.62,
+        "High": 4949.38,
+        "Low": 4847.17,
+        "Close": 4901.27
+      }
+    },
+    "PatchTST": {
+      "next_15m": {
+        "High": 4895.57,
+        "Low": 4884.77,
+        "Close": 4888.71
+      },
+      "next_day": {
+        "Open": 4890.32,
+        "High": 4998.03,
+        "Low": 4890.32,
+        "Close": 4901.76
+      }
+    },
+    "TFT": {
+      "next_15m": {
+        "High": 4896.65,
+        "Low": 4881.39,
+        "Close": 4890.11
+      },
+      "next_day": {
+        "Open": 4889.45,
+        "High": 4951.43,
+        "Low": 4855.75,
+        "Close": 4907.43
+      }
+    }
+  }
+}

@@ -1,18 +1,11 @@
 # -*- coding: utf-8 -*-
-"""
-XAU/USD next-day OHLC forecaster.
+"""Train XAU/USD 15-minute and next-session forecasts from recent intraday bars.
 
-Refactored from xau_usd_using_genetic_algorithm.py (Colab export):
-  * predicts the NEXT 1 DAY Open / High / Low / Close (instead of 5 and 10 days)
-  * Phase A - backtest: train on the first 90%, score on the last 10% (for UI statistics)
-  * Phase B - refit:    retrain every model on 100% of the labelled data
-  * predicts the day after the last available date (9/21/2026 -> 9/22/2026)
-  * writes outputs/results.json + outputs/backtest_predictions.csv for the Streamlit UI (app.py)
+The command-line entry point runs xau_15m_kaggle_train.py (the active neural models: LSTM, GRU,
+Transformer, Transformer-MT, SAG-LSTM) on the latest 20,000 15-minute rows.
 
-Run:  python train_predict.py                              (train every model and save them)
-      python train_predict.py --predict                    (add new rows to NEW_FINANCIAL_DATA, then forecast
-                                                            the next day with the saved models: no training)
-      python train_predict.py --only Helformer            (train one model, keep the others' results)
+Run:
+    python train_predict.py --data XAU_15m_data.csv --rows 20000
 """
 
 import ast
@@ -122,6 +115,10 @@ def set_seed(seed=RANDOM_SEED):
 
 # Latest daily bars not yet in the CSV export (newest first, same format as investing.com)
 NEW_FINANCIAL_DATA = """Date,Price,Open,High,Low,Change %
+9/30/2026,"4,157.34","4,182.80","4,219.46","4,147.47",-0.61%
+
+9/29/2026,"4,182.80","4,113.87","4,185.42","4,113.57",+1.34%
+
 9/28/2026,"4,127.38","4,277.90","4,280.56","4,110.95",-3.73%
 
 9/25/2026,"4,287.25","4,279.12","4,316.81","4,254.45",+0.20%
@@ -596,6 +593,47 @@ class CNN_BiLSTM_Attention(nn.Module):
         return self.dense(context)
 
 
+class Attention(nn.Module):
+    def __init__(self, hidden_size):
+        super().__init__()
+        self.query_projection = nn.Linear(hidden_size, hidden_size, bias=False)
+        self.key_projection = nn.Linear(hidden_size, hidden_size, bias=False)
+        self.score = nn.Linear(hidden_size, 1, bias=False)
+
+    def forward(self, query, values):
+        scores = self.score(torch.tanh(
+            self.query_projection(query).unsqueeze(2) + self.key_projection(values).unsqueeze(1)
+        )).squeeze(-1)
+        attention_weights = torch.softmax(scores, dim=-1)
+        context = torch.bmm(attention_weights, values)
+        return context, attention_weights
+
+
+class LSTMAttentionLSTM(nn.Module):
+    """Encoder-attention-decoder model for the next-day OHLC returns and direction logit."""
+
+    def __init__(self, input_size, hidden_size, output_steps, output_size=1, dropout=0.3):
+        super().__init__()
+        self.hidden_size = hidden_size
+        self.output_steps = output_steps
+        self.encoder = nn.LSTM(input_size=input_size, hidden_size=hidden_size, batch_first=True)
+        self.attention = Attention(hidden_size)
+        self.decoder = nn.LSTM(input_size=hidden_size * 2, hidden_size=hidden_size, batch_first=True)
+        self.dropout = nn.Dropout(dropout)
+        self.fc = nn.Linear(hidden_size, output_size)
+        self.last_attention_weights = None
+
+    def forward(self, x):
+        encoder_outputs, (hidden, _) = self.encoder(x)
+        decoder_input = hidden[-1].unsqueeze(1).expand(-1, self.output_steps, -1)
+        context, attention_weights = self.attention(decoder_input, encoder_outputs)
+        decoder_input = torch.cat([decoder_input, context], dim=-1)
+        decoder_outputs, _ = self.decoder(decoder_input)
+        predictions = self.fc(self.dropout(decoder_outputs))
+        self.last_attention_weights = attention_weights.detach()
+        return predictions[:, 0, :] if self.output_steps == 1 else predictions
+
+
 class LSTMTransformer(nn.Module):
     """
     LSTM-Transformer (encoder-decoder).
@@ -792,7 +830,7 @@ class Helformer(nn.Module):
 
 
 # Models that take a WINDOW_SIZE-day sliding window instead of a single day's features
-WINDOW_MODELS = {"CNN-BiLSTM-Attn", "LSTM-Transformer"}
+WINDOW_MODELS = {"CNN-BiLSTM-Attn", "LSTM-Transformer", "LSTM-Attention-LSTM"}
 # Models that take the sliding window plus the 2 EEMD components
 EEMD_MODELS = {"EEMD-TCN-GRU"}
 
@@ -805,7 +843,8 @@ PRICE_WINDOW_MODELS = {"Helformer"}
 # backtest (they ranked 10th-17th by average RMSE); uncomment a name here AND in build_models to use it again.
 ACTIVE_NEURAL_MODELS = [
     # "CNN-BiLSTM-Attn",
-    "LSTM-Transformer",
+    # "LSTM-Transformer",
+    # "LSTM-Attention-LSTM",
     # "EEMD-TCN-GRU",
     # "Helformer",
     "LSTM",
@@ -839,6 +878,8 @@ def build_models(input_size, output_size, sag_hidden_size):
         # "CNN-BiLSTM-Attn": CNN_BiLSTM_Attention(input_size=input_size, window_size=WINDOW_SIZE,
         #                                         output_size=output_size),
         "LSTM-Transformer": LSTMTransformer(input_size=input_size, output_size=output_size),
+        "LSTM-Attention-LSTM": LSTMAttentionLSTM(input_size=input_size, hidden_size=128, output_steps=1,
+                              output_size=output_size),
         # "EEMD-TCN-GRU": EEMD_TCN_GRU(input_size=input_size, output_size=output_size),
         # "Helformer": Helformer(input_size=input_size, output_size=output_size),
         "LSTM": LSTMModel(input_size=input_size, output_size=output_size),
@@ -1548,6 +1589,8 @@ def predict_next_day():
     for name, model in build_models(len(FEATURE_COLUMNS), len(TARGET_COLUMNS), art["sag_hidden"]).items():
         model.load_state_dict(torch.load(_model_file(name), map_location=device))
         model.to(device).eval()
+        if name not in art.get("model_names", []):
+            continue
         X = inputs[input_kind(name)]
         prices = returns_to_prices(tscaler.inverse_transform(predict_model(model, X)), np.array([last_close]))
         predictions[name] = {p: float(prices[p][0]) for p in PRICE_TYPES}
@@ -1767,8 +1810,8 @@ def main(only=None):
     print(f"GA best: hidden={sag_hidden}, lr={sag_lr:.5f}, epochs={sag_epochs}")
 
     train_cfg = {name: (EPOCHS, LEARNING_RATE) for name in
-                 ["CNN-BiLSTM-Attn", "LSTM-Transformer", "EEMD-TCN-GRU", "Helformer", "LSTM", "GRU", "Transformer",
-                  "Transformer-MT",
+                 ["CNN-BiLSTM-Attn", "LSTM-Transformer", "LSTM-Attention-LSTM", "EEMD-TCN-GRU", "Helformer",
+                  "LSTM", "GRU", "Transformer", "Transformer-MT",
                   "PatchTST", "TFT"]}
     train_cfg["SAG-LSTM"] = (sag_epochs, sag_lr)
     train_cfg["LightGBM"] = (LGB_PARAMS["n_estimators"], LGB_PARAMS["learning_rate"])
@@ -2177,24 +2220,6 @@ def main(only=None):
 
 
 if __name__ == "__main__":
-    import argparse
+    from xau_15m_kaggle_train import main as train_15m_models
 
-    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("--only", nargs="+", metavar="MODEL",
-                        help="train only these models (e.g. --only LSTM-Transformer) and merge them into the "
-                             "existing outputs; the other models are not retrained")
-    parser.add_argument("--export-backtest", action="store_true",
-                        help="only rebuild outputs/backtest_ohlc.csv from the stored predictions (no training)")
-    parser.add_argument("--save-models", action="store_true",
-                        help="one-time refit of the final models on the data behind results.json, then save them")
-    parser.add_argument("--predict", action="store_true",
-                        help="forecast the day after the latest data with the saved models (no training)")
-    args = parser.parse_args()
-    if args.export_backtest:
-        export_backtest_ohlc()
-    elif args.save_models:
-        refit_and_save()
-    elif args.predict:
-        predict_next_day()
-    else:
-        main(only=args.only)
+    train_15m_models()

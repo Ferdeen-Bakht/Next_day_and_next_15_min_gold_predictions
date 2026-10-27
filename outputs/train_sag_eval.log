@@ -1,0 +1,43 @@
+Device: cpu | mode: eval | epochs: 54
+Rows: 100000 | 2021-09-27 09:45:00 -> 2026-01-30 23:45:00
+train 79874 | val 9888 | test 9889
+Epoch   1/54 | train 1.058268 | val 1.648836 | 39s
+Epoch   2/54 | train 0.989377 | val 1.653358 | 82s
+Epoch   3/54 | train 0.978437 | val 1.646769 | 129s
+Epoch   4/54 | train 0.975845 | val 1.653695 | 173s
+Epoch   5/54 | train 0.971616 | val 1.629121 | 215s
+Epoch   6/54 | train 0.959809 | val 1.627859 | 256s
+Epoch   7/54 | train 0.956051 | val 1.631749 | 312s
+Epoch   8/54 | train 0.954368 | val 1.638935 | 349s
+Epoch   9/54 | train 0.951115 | val 1.647763 | 432s
+Epoch  10/54 | train 0.948144 | val 1.653301 | 482s
+Epoch  11/54 | train 0.947371 | val 1.653717 | 519s
+Epoch  12/54 | train 0.946201 | val 1.657516 | 557s
+Epoch  13/54 | train 0.940850 | val 1.665803 | 596s
+Epoch  14/54 | train 0.936167 | val 1.661071 | 633s
+Epoch  15/54 | train 0.931284 | val 1.668820 | 671s
+Epoch  16/54 | train 0.926623 | val 1.692084 | 709s
+Epoch  17/54 | train 0.924938 | val 1.700570 | 747s
+Epoch  18/54 | train 0.922501 | val 1.703177 | 786s
+Epoch  19/54 | train 0.920932 | val 1.718522 | 823s
+Epoch  20/54 | train 0.922760 | val 1.738122 | 861s
+Epoch  21/54 | train 0.925756 | val 1.736407 | 899s
+Epoch  22/54 | train 0.920645 | val 1.682691 | 936s
+Epoch  23/54 | train 0.913644 | val 1.722915 | 973s
+Epoch  24/54 | train 0.909073 | val 1.749557 | 1018s
+Epoch  25/54 | train 0.907215 | val 1.755424 | 1057s
+Epoch  26/54 | train 0.904645 | val 1.743894 | 1095s
+Epoch  27/54 | train 0.901489 | val 1.746313 | 1133s
+Epoch  28/54 | train 0.894908 | val 1.770102 | 1172s
+Epoch  29/54 | train 0.893579 | val 1.803985 | 1210s
+Epoch  30/54 | train 0.901224 | val 1.736659 | 1249s
+Epoch  31/54 | train 0.896226 | val 1.726915 | 1287s
+Epoch  32/54 | train 0.886448 | val 1.780873 | 1325s
+Epoch  33/54 | train 0.887295 | val 1.759615 | 1363s
+Epoch  34/54 | train 0.882031 | val 1.724712 | 1401s
+Epoch  35/54 | train 0.878773 | val 1.768248 | 1439s
+Epoch  36/54 | train 0.883828 | val 1.774297 | 1478s
+Epoch  37/54 | train 0.875389 | val 1.737846 | 1517s
+Epoch  38/54 | train 0.879820 | val 1.768078 | 1558s
+Epoch  39/54 | train 0.868852 | val 1.772772 | 1598s
+Epoch  40/54 | train 0.861678 | val 1.767273 | 1638s
